@@ -1,6 +1,7 @@
 package com.hotel.reservations.web;
 
 import com.hotel.reservations.repository.ReservationRepository;
+import com.hotel.reservations.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,9 +34,16 @@ class HotelApiIntegrationTest {
     @Autowired
     private ReservationRepository reservationRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private String token;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         reservationRepository.deleteAll();
+        userRepository.deleteAll();
+        token = registerAndGetToken("ada@example.com");
     }
 
     // ---------- GET /api/hotel/disponibilidad ----------
@@ -94,7 +102,7 @@ class HotelApiIntegrationTest {
 
     @Test
     void createReservationReturns201WithTheContractPayload() throws Exception {
-        mockMvc.perform(post("/api/hotel/reservar")
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(reservationBody(1, "2026-11-01", "2026-11-03")))
                 .andExpect(status().isCreated())
@@ -121,7 +129,7 @@ class HotelApiIntegrationTest {
                 {"roomId": 1, "checkIn": "2026-11-01", "checkOut": "2026-11-03",
                  "guest": {"fullName": "", "email": "not-an-email", "phone": "", "document": ""}}
                 """;
-        mockMvc.perform(post("/api/hotel/reservar")
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -132,7 +140,7 @@ class HotelApiIntegrationTest {
 
     @Test
     void createReservationRejectsAnUnknownRoom() throws Exception {
-        mockMvc.perform(post("/api/hotel/reservar")
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(reservationBody(999, "2026-11-01", "2026-11-03")))
                 .andExpect(status().isNotFound())
@@ -143,7 +151,7 @@ class HotelApiIntegrationTest {
     void createReservationRejectsAnAlreadyBookedRoom() throws Exception {
         createReservation(6, "2026-11-01", "2026-11-03");
 
-        mockMvc.perform(post("/api/hotel/reservar")
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(reservationBody(6, "2026-11-02", "2026-11-04")))
                 .andExpect(status().isConflict())
@@ -156,7 +164,7 @@ class HotelApiIntegrationTest {
     void addServiceAddsTheExtraWithItsConfiguredPrice() throws Exception {
         String id = createReservation(1, "2026-11-01", "2026-11-03"); // 2 nights
 
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id)
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id).header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"BREAKFAST\"}"))
                 .andExpect(status().isOk())
@@ -170,7 +178,7 @@ class HotelApiIntegrationTest {
 
     @Test
     void addServiceRejectsAnUnknownReservation() throws Exception {
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", "missing")
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", "missing").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"SPA\"}"))
                 .andExpect(status().isNotFound())
@@ -181,7 +189,7 @@ class HotelApiIntegrationTest {
     void addServiceRejectsAnInvalidServiceType() throws Exception {
         String id = createReservation(1, "2026-11-01", "2026-11-03");
 
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id)
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id).header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"SAUNA\"}"))
                 .andExpect(status().isBadRequest())
@@ -194,7 +202,7 @@ class HotelApiIntegrationTest {
     void checkInIssuesTheDigitalKey() throws Exception {
         String id = createReservation(1, "2026-11-01", "2026-11-03");
 
-        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id))
+        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CHECKED_IN"))
                 .andExpect(jsonPath("$.digitalKey").isNotEmpty());
@@ -205,13 +213,13 @@ class HotelApiIntegrationTest {
     @Test
     void checkOutIssuesTheInvoiceAndReleasesTheRoom() throws Exception {
         String id = createReservation(6, "2026-11-01", "2026-11-03"); // DOUBLE, 2 nights
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id)
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id).header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"SPA\"}"))
                 .andExpect(status().isOk());
-        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id)).andExpect(status().isOk());
+        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id).header("Authorization", bearer())).andExpect(status().isOk());
 
-        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id))
+        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CHECKED_OUT"))
                 .andExpect(jsonPath("$.invoice.number").value(startsWith("FAC-")))
@@ -220,7 +228,7 @@ class HotelApiIntegrationTest {
                 .andExpect(jsonPath("$.invoice.total").value(230.0));
 
         // The room was released: the same dates can be booked again.
-        mockMvc.perform(post("/api/hotel/reservar")
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(reservationBody(6, "2026-11-01", "2026-11-03")))
                 .andExpect(status().isCreated());
@@ -230,7 +238,7 @@ class HotelApiIntegrationTest {
     void checkOutWithoutCheckInIsRejected() throws Exception {
         String id = createReservation(1, "2026-11-01", "2026-11-03");
 
-        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id))
+        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("INVALID_STATE"));
     }
@@ -240,12 +248,12 @@ class HotelApiIntegrationTest {
     @Test
     void getReservationReturnsTheFullPayload() throws Exception {
         String id = createReservation(1, "2026-11-01", "2026-11-03");
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id)
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id).header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"TRANSFER\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", id))
+        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.services", hasSize(1)))
@@ -255,7 +263,7 @@ class HotelApiIntegrationTest {
 
     @Test
     void getReservationRejectsAnUnknownId() throws Exception {
-        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", "missing"))
+        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", "missing").header("Authorization", bearer()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("RESERVATION_NOT_FOUND"));
     }
@@ -266,18 +274,18 @@ class HotelApiIntegrationTest {
     void fullLifecycleThroughTheApi() throws Exception {
         String id = createReservation(11, "2026-11-01", "2026-11-03"); // SUITE, 2 nights
 
-        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id)
+        mockMvc.perform(post("/api/hotel/servicios/{reservaId}", id).header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceType\": \"SPA\"}"))
                 .andExpect(status().isOk());
-        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id))
+        mockMvc.perform(put("/api/hotel/checkin/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CHECKED_IN"));
-        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id))
+        mockMvc.perform(put("/api/hotel/checkout/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CHECKED_OUT"));
 
-        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", id))
+        mockMvc.perform(get("/api/hotel/reserva/{reservaId}", id).header("Authorization", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roomTotal").value(360.0)) // 2 x 180.00
                 .andExpect(jsonPath("$.servicesTotal").value(50.0))
@@ -286,8 +294,24 @@ class HotelApiIntegrationTest {
                 .andExpect(jsonPath("$.invoice.lines", hasSize(2)));
     }
 
+    private String registerAndGetToken(String email) throws Exception {
+        String response = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fullName\": \"Ada Lovelace\", \"email\": \"" + email
+                                + "\", \"password\": \"secret-pass\"}"))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return JsonPath.read(response, "$.token");
+    }
+
+    private String bearer() {
+        return "Bearer " + token;
+    }
+
     private String createReservation(int roomId, String checkIn, String checkOut) throws Exception {
-        String response = mockMvc.perform(post("/api/hotel/reservar")
+        String response = mockMvc.perform(post("/api/hotel/reservar").header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(reservationBody(roomId, checkIn, checkOut)))
                 .andExpect(status().isCreated())
