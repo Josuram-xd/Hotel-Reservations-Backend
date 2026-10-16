@@ -79,7 +79,7 @@ Contract: see the "Authentication" section of
 Users live in memory like everything else. Passwords are hashed with BCrypt (`spring-security-crypto`, no full Spring Security needed).
 Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` with expiry), checked by a servlet filter or `HandlerInterceptor`.
 
-- [ ] feat(user): add User model, in-memory UserRepository and unique email rule [8.1]
+- [x] feat(user): add User model, in-memory UserRepository and unique email rule [8.1]
 - [ ] feat(auth): implement AuthService register and login with BCrypt and token issuing [8.2]
 - [ ] feat(auth): POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout [8.3]
 - [ ] feat(auth): bearer token interceptor protecting booking endpoints (GET /disponibilidad stays public) [8.4]
