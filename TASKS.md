@@ -25,7 +25,7 @@ Branch naming: `task-<n>-<short-description>`.
 - [x] feat(room): seed 15+ predefined rooms across SINGLE, DOUBLE and SUITE types [1.2]
 - [x] feat(room): implement RoomService availability search by date range and type [1.3]
 - [x] feat(room): implement RoomService reserve and release with overlap protection [1.4]
-- [ ] test(room): cover RoomService availability, overlap, reserve and release [1.5]
+- [x] test(room): cover RoomService availability, overlap, reserve and release [1.5]
 
 ## Phase 2 - Pricing
 
