@@ -81,7 +81,7 @@ Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` w
 
 - [x] feat(user): add User model, in-memory UserRepository and unique email rule [8.1]
 - [x] feat(auth): implement AuthService register and login with BCrypt and token issuing [8.2]
-- [ ] feat(auth): POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout [8.3]
+- [x] feat(auth): POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout [8.3]
 - [ ] feat(auth): bearer token interceptor protecting booking endpoints (GET /disponibilidad stays public) [8.4]
 - [ ] feat(reservation): link reservations to their owner and return FORBIDDEN for other users [8.5]
 - [ ] feat(api): GET /api/hotel/mis-reservas listing the authenticated user reservations [8.6]
