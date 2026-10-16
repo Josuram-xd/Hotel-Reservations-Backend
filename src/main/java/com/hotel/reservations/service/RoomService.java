@@ -1,6 +1,8 @@
 package com.hotel.reservations.service;
 
 import com.hotel.reservations.exception.InvalidDatesException;
+import com.hotel.reservations.exception.RoomNotAvailableException;
+import com.hotel.reservations.model.Guest;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
 import com.hotel.reservations.model.RoomType;
@@ -42,6 +44,25 @@ public class RoomService {
         return reservationRepository.findByRoom(room.getId()).stream()
                 .filter(Reservation::blocksAvailability)
                 .noneMatch(reservation -> reservation.overlaps(checkIn, checkOut));
+    }
+
+    /**
+     * Reserves the room for [checkIn, checkOut). Fails when another blocking
+     * reservation already overlaps the requested range.
+     */
+    public Reservation reserve(Room room, LocalDate checkIn, LocalDate checkOut, Guest guest) {
+        if (!isAvailable(room, checkIn, checkOut)) {
+            throw new RoomNotAvailableException(
+                    "Room " + room.getNumber() + " is not available for the requested dates");
+        }
+        Reservation reservation = new Reservation(room, guest, checkIn, checkOut);
+        reservationRepository.save(reservation);
+        return reservation;
+    }
+
+    /** Ends the stay and releases the room: CHECKED_IN -> CHECKED_OUT. */
+    public void release(Reservation reservation) {
+        reservation.checkOut();
     }
 
     private void validateRange(LocalDate checkIn, LocalDate checkOut) {
