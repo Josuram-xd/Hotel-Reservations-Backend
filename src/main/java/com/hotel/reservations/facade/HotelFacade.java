@@ -1,5 +1,6 @@
 package com.hotel.reservations.facade;
 
+import com.hotel.reservations.exception.ForbiddenException;
 import com.hotel.reservations.exception.ReservationNotFoundException;
 import com.hotel.reservations.model.AdditionalService;
 import com.hotel.reservations.model.Guest;
@@ -16,6 +17,7 @@ import com.hotel.reservations.service.RoomService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -52,6 +54,32 @@ public class HotelFacade {
     public Reservation createReservation(int roomId, LocalDate checkIn, LocalDate checkOut, Guest guest) {
         Room room = roomService.getRoom(roomId);
         return roomService.reserve(room, checkIn, checkOut, guest);
+    }
+
+    /** Creates a reservation owned by the given user. */
+    public Reservation createReservation(String ownerId, int roomId, LocalDate checkIn, LocalDate checkOut,
+                                         Guest guest) {
+        Room room = roomService.getRoom(roomId);
+        return roomService.reserve(room, checkIn, checkOut, guest, ownerId);
+    }
+
+    /**
+     * The reservation, only when it belongs to the given user: ReservationNotFoundException when it does not
+     * exist and ForbiddenException when it belongs to someone else (or to nobody).
+     */
+    public Reservation getOwnedReservation(String userId, String reservationId) {
+        Reservation reservation = getReservation(reservationId);
+        if (!userId.equals(reservation.getOwnerId())) {
+            throw new ForbiddenException("Reservation " + reservationId + " does not belong to the current user");
+        }
+        return reservation;
+    }
+
+    /** The reservations of the user, most recent check-in first. */
+    public List<Reservation> findReservationsByOwner(String userId) {
+        return reservationRepository.findByOwner(userId).stream()
+                .sorted(Comparator.comparing(Reservation::getCheckIn).reversed())
+                .toList();
     }
 
     /** Rooms of the given type (or every type when {@code type} is null) free for [checkIn, checkOut). */
