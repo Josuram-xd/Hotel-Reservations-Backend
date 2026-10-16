@@ -61,11 +61,17 @@ public class RoomService {
      * the same room for overlapping dates.
      */
     public synchronized Reservation reserve(Room room, LocalDate checkIn, LocalDate checkOut, Guest guest) {
+        return reserve(room, checkIn, checkOut, guest, null);
+    }
+
+    /** Same as {@link #reserve(Room, LocalDate, LocalDate, Guest)}, linking the reservation to its owner. */
+    public synchronized Reservation reserve(Room room, LocalDate checkIn, LocalDate checkOut, Guest guest,
+                                            String ownerId) {
         if (!isAvailable(room, checkIn, checkOut)) {
             throw new RoomNotAvailableException(
                     "Room " + room.getNumber() + " is not available for the requested dates");
         }
-        Reservation reservation = new Reservation(room, guest, checkIn, checkOut);
+        Reservation reservation = new Reservation(room, guest, checkIn, checkOut, ownerId);
         reservationRepository.save(reservation);
         return reservation;
     }

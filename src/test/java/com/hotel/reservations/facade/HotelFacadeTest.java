@@ -3,6 +3,7 @@ package com.hotel.reservations.facade;
 import com.hotel.reservations.config.ExtrasProperties;
 import com.hotel.reservations.config.PricingProperties;
 import com.hotel.reservations.config.PricingProperties.SeasonRange;
+import com.hotel.reservations.exception.ForbiddenException;
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.exception.InvalidStateException;
 import com.hotel.reservations.exception.ReservationNotFoundException;
@@ -174,5 +175,54 @@ class HotelFacadeTest {
         assertThatThrownBy(() -> facade.getReservation("missing"))
                 .isInstanceOf(ReservationNotFoundException.class);
         assertThat(reservationRepository.findAll()).isEmpty();
+    }
+
+    // ---------- ownership ----------
+
+    @Test
+    void createReservationWithAnOwnerStoresIt() {
+        Reservation reservation = facade.createReservation("user-1", SINGLE_101, NOV_1, NOV_3, GUEST);
+
+        assertThat(reservation.getOwnerId()).isEqualTo("user-1");
+        assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    void getOwnedReservationReturnsItToItsOwner() {
+        Reservation reservation = facade.createReservation("user-1", SINGLE_101, NOV_1, NOV_3, GUEST);
+
+        assertThat(facade.getOwnedReservation("user-1", reservation.getId())).isEqualTo(reservation);
+    }
+
+    @Test
+    void getOwnedReservationRejectsAnotherUser() {
+        Reservation reservation = facade.createReservation("user-1", SINGLE_101, NOV_1, NOV_3, GUEST);
+
+        assertThatThrownBy(() -> facade.getOwnedReservation("user-2", reservation.getId()))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void getOwnedReservationRejectsReservationsWithoutAnOwner() {
+        Reservation reservation = facade.createReservation(SINGLE_101, NOV_1, NOV_3, GUEST);
+
+        assertThatThrownBy(() -> facade.getOwnedReservation("user-1", reservation.getId()))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void getOwnedReservationRejectsAnUnknownId() {
+        assertThatThrownBy(() -> facade.getOwnedReservation("user-1", "missing"))
+                .isInstanceOf(ReservationNotFoundException.class);
+    }
+
+    @Test
+    void findReservationsByOwnerReturnsOnlyTheirsMostRecentFirst() {
+        Reservation early = facade.createReservation("user-1", SINGLE_101, NOV_1, NOV_3, GUEST);
+        Reservation late = facade.createReservation("user-1", DOUBLE_201, NOV_3, NOV_5, GUEST);
+        facade.createReservation("user-2", 2, NOV_1, NOV_3, GUEST);
+
+        assertThat(facade.findReservationsByOwner("user-1")).containsExactly(late, early);
+        assertThat(facade.findReservationsByOwner("nobody")).isEmpty();
     }
 }

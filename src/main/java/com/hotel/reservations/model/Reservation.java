@@ -24,12 +24,19 @@ public class Reservation {
     private final LocalDate checkIn;
     private final LocalDate checkOut;
     private final List<AdditionalService> services = new ArrayList<>();
+    private final String ownerId;
 
     private ReservationStatus status;
     private String digitalKey;
     private Invoice invoice;
 
+    /** A reservation with no owner (not linked to any user account). */
     public Reservation(Room room, Guest guest, LocalDate checkIn, LocalDate checkOut) {
+        this(room, guest, checkIn, checkOut, null);
+    }
+
+    /** A reservation owned by the user with the given id; only that user may manage it. */
+    public Reservation(Room room, Guest guest, LocalDate checkIn, LocalDate checkOut, String ownerId) {
         this.room = Objects.requireNonNull(room, "room must not be null");
         this.guest = Objects.requireNonNull(guest, "guest must not be null");
         this.checkIn = Objects.requireNonNull(checkIn, "checkIn must not be null");
@@ -37,6 +44,7 @@ public class Reservation {
         if (!checkOut.isAfter(checkIn)) {
             throw new InvalidDatesException("checkOut must be after checkIn");
         }
+        this.ownerId = ownerId;
         this.id = UUID.randomUUID().toString();
         this.status = ReservationStatus.CONFIRMED;
     }
@@ -103,6 +111,11 @@ public class Reservation {
 
     public String getId() {
         return id;
+    }
+
+    /** Id of the user that owns the reservation, or null when it has no owner. */
+    public String getOwnerId() {
+        return ownerId;
     }
 
     public Room getRoom() {

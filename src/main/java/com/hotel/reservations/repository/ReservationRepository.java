@@ -36,6 +36,13 @@ public class ReservationRepository {
                 .findFirst();
     }
 
+    /** Reservations owned by the given user, in creation order. */
+    public List<Reservation> findByOwner(String ownerId) {
+        return reservations.stream()
+                .filter(reservation -> ownerId.equals(reservation.getOwnerId()))
+                .toList();
+    }
+
     /** Reservations booked for the given room, in creation order. */
     public List<Reservation> findByRoom(int roomId) {
         return reservations.stream()
