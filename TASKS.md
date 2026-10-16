@@ -35,7 +35,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 ## Phase 3 - Extras, billing and access
 
-- [ ] feat(extras): implement AdditionalServiceService (spa, breakfast, transfer) [3.1]
+- [x] feat(extras): implement AdditionalServiceService (spa, breakfast, transfer) [3.1]
 - [ ] feat(billing): implement BillingService detailed invoice with line-item breakdown [3.2]
 - [ ] feat(access): implement AccessService digital key generation (UUID) [3.3]
 - [ ] test(services): cover extras, billing and access services [3.4]
