@@ -62,7 +62,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 ## Phase 6 - Concurrency and hardening
 
-- [ ] feat(room): make reservations thread-safe to prevent double booking [6.1]
+- [x] feat(room): make reservations thread-safe to prevent double booking [6.1]
 - [ ] test(room): concurrent booking test on the same room and dates [6.2]
 
 ## Phase 7 - Deployment (Railway)

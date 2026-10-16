@@ -56,8 +56,11 @@ public class RoomService {
     /**
      * Reserves the room for [checkIn, checkOut). Fails when another blocking
      * reservation already overlaps the requested range.
+     * Synchronized together with {@link #release}: the availability check and
+     * the store happen atomically, so concurrent requests cannot double-book
+     * the same room for overlapping dates.
      */
-    public Reservation reserve(Room room, LocalDate checkIn, LocalDate checkOut, Guest guest) {
+    public synchronized Reservation reserve(Room room, LocalDate checkIn, LocalDate checkOut, Guest guest) {
         if (!isAvailable(room, checkIn, checkOut)) {
             throw new RoomNotAvailableException(
                     "Room " + room.getNumber() + " is not available for the requested dates");
@@ -67,8 +70,12 @@ public class RoomService {
         return reservation;
     }
 
-    /** Ends the stay and releases the room: CHECKED_IN -> CHECKED_OUT. */
-    public void release(Reservation reservation) {
+    /**
+     * Ends the stay and releases the room: CHECKED_IN -> CHECKED_OUT.
+     * Synchronized together with {@link #reserve} to keep the reservation
+     * lifecycle free of interleavings between simultaneous requests.
+     */
+    public synchronized void release(Reservation reservation) {
         reservation.checkOut();
     }
 
