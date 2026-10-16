@@ -37,11 +37,14 @@ public class RateService {
 
     /** Price of one night: the base price, multiplied when the night falls in high season. */
     public BigDecimal pricePerNight(RoomType type, LocalDate date) {
-        BigDecimal price = basePrice(type);
-        if (isHighSeason(date)) {
-            price = price.multiply(prices.highSeasonMultiplier()).setScale(MONEY_SCALE, RoundingMode.HALF_UP);
-        }
-        return price;
+        return isHighSeason(date) ? highSeasonPricePerNight(type) : basePrice(type);
+    }
+
+    /** Price of one high-season night for the room type (base price x multiplier). */
+    public BigDecimal highSeasonPricePerNight(RoomType type) {
+        return basePrice(type)
+                .multiply(prices.highSeasonMultiplier())
+                .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
     /** Number of nights of [checkIn, checkOut) that fall in high season. */
