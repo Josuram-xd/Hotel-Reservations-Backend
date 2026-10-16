@@ -31,7 +31,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 - [x] feat(rate): add configurable pricing properties (base prices, seasons, multiplier) [2.1]
 - [x] feat(rate): implement RateService total price by nights, room type and season [2.2]
-- [ ] test(rate): cover low season, high season, mixed-season and edge cases [2.3]
+- [x] test(rate): cover low season, high season, mixed-season and edge cases [2.3]
 
 ## Phase 3 - Extras, billing and access
 
