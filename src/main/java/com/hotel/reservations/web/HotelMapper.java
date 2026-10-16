@@ -1,5 +1,6 @@
 package com.hotel.reservations.web;
 
+import com.hotel.reservations.dto.AvailableRoomResponse;
 import com.hotel.reservations.dto.GuestResponse;
 import com.hotel.reservations.dto.InvoiceLineResponse;
 import com.hotel.reservations.dto.InvoiceResponse;
@@ -8,12 +9,15 @@ import com.hotel.reservations.dto.RoomResponse;
 import com.hotel.reservations.dto.ServiceResponse;
 import com.hotel.reservations.model.Invoice;
 import com.hotel.reservations.model.Reservation;
+import com.hotel.reservations.model.Room;
 import com.hotel.reservations.model.RoomType;
 import com.hotel.reservations.service.RateService;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /** Maps domain objects to the API DTOs defined in the frontend API contract. */
@@ -53,6 +57,18 @@ public class HotelMapper {
                 roomTotal.add(servicesTotal),
                 reservation.getDigitalKey(),
                 reservation.getInvoice() == null ? null : toInvoiceResponse(reservation.getInvoice()));
+    }
+
+    /** Availability item: the room plus its price preview for the requested dates. */
+    public AvailableRoomResponse toAvailableRoomResponse(Room room, LocalDate checkIn, LocalDate checkOut) {
+        return new AvailableRoomResponse(
+                room.getId(),
+                room.getNumber(),
+                room.getType(),
+                rateService.basePrice(room.getType()),
+                (int) ChronoUnit.DAYS.between(checkIn, checkOut),
+                rateService.highSeasonNights(checkIn, checkOut),
+                rateService.totalForStay(room.getType(), checkIn, checkOut));
     }
 
     public InvoiceResponse toInvoiceResponse(Invoice invoice) {
