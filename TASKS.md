@@ -86,7 +86,7 @@ Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` w
 - [x] feat(reservation): link reservations to their owner and return FORBIDDEN for other users [8.5]
 - [x] feat(api): GET /api/hotel/mis-reservas listing the authenticated user reservations [8.6]
 - [x] feat(api): add error codes UNAUTHORIZED, FORBIDDEN, INVALID_CREDENTIALS, EMAIL_ALREADY_REGISTERED [8.7]
-- [ ] test(auth): cover register, login, token validation and ownership rules [8.8]
+- [x] test(auth): cover register, login, token validation and ownership rules [8.8]
 
 ## Phase 9 - Design patterns (see `docs/PATTERNS.md`)
 
