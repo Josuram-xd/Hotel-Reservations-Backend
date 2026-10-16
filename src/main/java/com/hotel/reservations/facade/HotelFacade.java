@@ -1,19 +1,19 @@
 package com.hotel.reservations.facade;
 
+import com.hotel.reservations.event.ReservationCheckedIn;
+import com.hotel.reservations.event.ReservationCheckedOut;
 import com.hotel.reservations.exception.ForbiddenException;
 import com.hotel.reservations.exception.ReservationNotFoundException;
 import com.hotel.reservations.model.AdditionalService;
 import com.hotel.reservations.model.Guest;
-import com.hotel.reservations.model.Invoice;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
 import com.hotel.reservations.model.RoomType;
 import com.hotel.reservations.model.ServiceType;
 import com.hotel.reservations.repository.ReservationRepository;
-import com.hotel.reservations.service.AccessService;
 import com.hotel.reservations.service.AdditionalServiceService;
-import com.hotel.reservations.service.BillingService;
 import com.hotel.reservations.service.RoomService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,7 +23,9 @@ import java.util.List;
 /**
  * Single entry point for the hotel operations. Callers (the REST controller
  * and the tests) never talk to the individual services directly: the facade
- * orchestrates rooms, pricing, extras, billing and access.
+ * orchestrates rooms and extras and announces the stay milestones with events
+ * (Observer pattern): the digital key and the final invoice are produced by
+ * listeners that react to the check-in and check-out events.
  */
 @Service
 public class HotelFacade {
@@ -31,19 +33,16 @@ public class HotelFacade {
     private final RoomService roomService;
     private final ReservationRepository reservationRepository;
     private final AdditionalServiceService additionalServiceService;
-    private final BillingService billingService;
-    private final AccessService accessService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public HotelFacade(RoomService roomService,
                        ReservationRepository reservationRepository,
                        AdditionalServiceService additionalServiceService,
-                       BillingService billingService,
-                       AccessService accessService) {
+                       ApplicationEventPublisher eventPublisher) {
         this.roomService = roomService;
         this.reservationRepository = reservationRepository;
         this.additionalServiceService = additionalServiceService;
-        this.billingService = billingService;
-        this.accessService = accessService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -102,23 +101,26 @@ public class HotelFacade {
         return reservation;
     }
 
-    /** Checks the guest in (CONFIRMED -> CHECKED_IN) and issues the digital key. */
+    /**
+     * Checks the guest in (CONFIRMED -> CHECKED_IN) and publishes {@link ReservationCheckedIn},
+     * which makes the digital key be issued.
+     */
     public Reservation checkIn(String reservationId) {
         Reservation reservation = getReservation(reservationId);
         reservation.checkIn();
-        reservation.assignDigitalKey(accessService.issueDigitalKey());
+        eventPublisher.publishEvent(new ReservationCheckedIn(reservation));
         return reservation;
     }
 
     /**
-     * Checks the guest out (CHECKED_IN -> CHECKED_OUT): releases the room and
-     * stores the final invoice with the room charges and the extra services.
+     * Checks the guest out (CHECKED_IN -> CHECKED_OUT): releases the room and publishes
+     * {@link ReservationCheckedOut}, which makes the final invoice (room charges plus
+     * the extra services) be generated and stored.
      */
     public Reservation checkOut(String reservationId) {
         Reservation reservation = getReservation(reservationId);
         roomService.release(reservation);
-        Invoice invoice = billingService.buildInvoice(reservation);
-        reservation.attachInvoice(invoice);
+        eventPublisher.publishEvent(new ReservationCheckedOut(reservation));
         return reservation;
     }
 }

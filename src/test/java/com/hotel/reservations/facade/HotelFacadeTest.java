@@ -3,6 +3,10 @@ package com.hotel.reservations.facade;
 import com.hotel.reservations.config.ExtrasProperties;
 import com.hotel.reservations.config.PricingProperties;
 import com.hotel.reservations.config.PricingProperties.SeasonRange;
+import com.hotel.reservations.event.DigitalKeyListener;
+import com.hotel.reservations.event.InvoiceListener;
+import com.hotel.reservations.event.ReservationCheckedIn;
+import com.hotel.reservations.event.ReservationCheckedOut;
 import com.hotel.reservations.exception.ForbiddenException;
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.exception.InvalidStateException;
@@ -23,6 +27,7 @@ import com.hotel.reservations.service.RateService;
 import com.hotel.reservations.service.RoomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -66,8 +71,17 @@ class HotelFacadeTest {
         AdditionalServiceService additionalServiceService = new AdditionalServiceService(
                 new ExtrasProperties(new BigDecimal("50.00"), new BigDecimal("15.00"), new BigDecimal("30.00")));
         BillingService billingService = new BillingService(rateService);
-        facade = new HotelFacade(roomService, reservationRepository,
-                additionalServiceService, billingService, new AccessService());
+        // Same reactions as the Spring listeners, wired by hand so the facade is tested without a context.
+        DigitalKeyListener keyListener = new DigitalKeyListener(new AccessService());
+        InvoiceListener invoiceListener = new InvoiceListener(billingService);
+        ApplicationEventPublisher publisher = event -> {
+            if (event instanceof ReservationCheckedIn checkedIn) {
+                keyListener.onCheckedIn(checkedIn);
+            } else if (event instanceof ReservationCheckedOut checkedOut) {
+                invoiceListener.onCheckedOut(checkedOut);
+            }
+        };
+        facade = new HotelFacade(roomService, reservationRepository, additionalServiceService, publisher);
     }
 
     @Test
