@@ -2,6 +2,7 @@ package com.hotel.reservations.service;
 
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.exception.RoomNotAvailableException;
+import com.hotel.reservations.exception.RoomNotFoundException;
 import com.hotel.reservations.model.Guest;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
@@ -27,6 +28,12 @@ public class RoomService {
     public RoomService(RoomRepository roomRepository, ReservationRepository reservationRepository) {
         this.roomRepository = roomRepository;
         this.reservationRepository = reservationRepository;
+    }
+
+    /** The room with the given id, or RoomNotFoundException when it does not exist. */
+    public Room getRoom(int id) {
+        return roomRepository.findById(id)
+                .orElseThrow(() -> new RoomNotFoundException("Room " + id + " was not found"));
     }
 
     /** Rooms of the given type (or every type when {@code type} is null) free for [checkIn, checkOut). */
