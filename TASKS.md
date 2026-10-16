@@ -43,7 +43,7 @@ Branch naming: `task-<n>-<short-description>`.
 ## Phase 4 - Facade
 
 - [x] feat(facade): implement HotelFacade.createReservation with validation [4.1]
-- [ ] feat(facade): implement HotelFacade.addService (only while CONFIRMED or CHECKED_IN) [4.2]
+- [x] feat(facade): implement HotelFacade.addService (only while CONFIRMED or CHECKED_IN) [4.2]
 - [ ] feat(facade): implement HotelFacade.checkIn issuing the digital key [4.3]
 - [ ] feat(facade): implement HotelFacade.checkOut computing extra charges and final invoice [4.4]
 - [ ] test(facade): cover full lifecycle and invalid state transitions [4.5]

@@ -1,8 +1,13 @@
 package com.hotel.reservations.facade;
 
+import com.hotel.reservations.exception.ReservationNotFoundException;
+import com.hotel.reservations.model.AdditionalService;
 import com.hotel.reservations.model.Guest;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
+import com.hotel.reservations.model.ServiceType;
+import com.hotel.reservations.repository.ReservationRepository;
+import com.hotel.reservations.service.AdditionalServiceService;
 import com.hotel.reservations.service.RoomService;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +22,15 @@ import java.time.LocalDate;
 public class HotelFacade {
 
     private final RoomService roomService;
+    private final ReservationRepository reservationRepository;
+    private final AdditionalServiceService additionalServiceService;
 
-    public HotelFacade(RoomService roomService) {
+    public HotelFacade(RoomService roomService,
+                       ReservationRepository reservationRepository,
+                       AdditionalServiceService additionalServiceService) {
         this.roomService = roomService;
+        this.reservationRepository = reservationRepository;
+        this.additionalServiceService = additionalServiceService;
     }
 
     /**
@@ -30,5 +41,20 @@ public class HotelFacade {
     public Reservation createReservation(int roomId, LocalDate checkIn, LocalDate checkOut, Guest guest) {
         Room room = roomService.getRoom(roomId);
         return roomService.reserve(room, checkIn, checkOut, guest);
+    }
+
+    /** The reservation with the given id, or ReservationNotFoundException when it does not exist. */
+    public Reservation getReservation(String reservationId) {
+        return reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException(
+                        "Reservation " + reservationId + " was not found"));
+    }
+
+    /** Adds an extra service to the reservation. Only allowed while CONFIRMED or CHECKED_IN. */
+    public Reservation addService(String reservationId, ServiceType type) {
+        Reservation reservation = getReservation(reservationId);
+        AdditionalService service = additionalServiceService.create(type, reservation);
+        reservation.addService(service);
+        return reservation;
     }
 }
