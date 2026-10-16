@@ -15,6 +15,7 @@ HotelController -> HotelFacade -> RoomService, RateService, AdditionalServiceSer
                                    +-> RoomRepository, ReservationRepository (in-memory)
 ```
 
+- Design patterns used (Facade, Strategy, State, Factory, Builder, Observer): see [`docs/PATTERNS.md`](docs/PATTERNS.md).
 - `HotelFacade` is the only entry point used by the controller (Facade pattern, required by the case study).
 - 15 predefined rooms: 5 `SINGLE` (101-105), 5 `DOUBLE` (201-205) and 5 `SUITE` (301-305), see `RoomRepository`.
 - `AuthInterceptor` requires a bearer token on `/api/hotel/**` except `GET /api/hotel/disponibilidad`.
