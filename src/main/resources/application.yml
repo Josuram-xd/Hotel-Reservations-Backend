@@ -19,6 +19,8 @@ hotel:
         end: 08-31
       - start: 12-15
         end: 01-06
+  auth:
+    token-ttl: ${AUTH_TOKEN_TTL:8h}
   extras:
     spa: 50.00
     breakfast-per-day: 15.00

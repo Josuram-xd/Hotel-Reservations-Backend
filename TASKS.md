@@ -80,7 +80,7 @@ Users live in memory like everything else. Passwords are hashed with BCrypt (`sp
 Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` with expiry), checked by a servlet filter or `HandlerInterceptor`.
 
 - [x] feat(user): add User model, in-memory UserRepository and unique email rule [8.1]
-- [ ] feat(auth): implement AuthService register and login with BCrypt and token issuing [8.2]
+- [x] feat(auth): implement AuthService register and login with BCrypt and token issuing [8.2]
 - [ ] feat(auth): POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout [8.3]
 - [ ] feat(auth): bearer token interceptor protecting booking endpoints (GET /disponibilidad stays public) [8.4]
 - [ ] feat(reservation): link reservations to their owner and return FORBIDDEN for other users [8.5]
