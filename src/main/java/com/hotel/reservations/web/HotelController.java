@@ -81,4 +81,10 @@ public class HotelController {
     public ReservationResponse checkOut(@PathVariable String reservaId) {
         return mapper.toReservationResponse(facade.checkOut(reservaId));
     }
+
+    /** Reservation details, including services, totals and invoice when available. */
+    @GetMapping("/reserva/{reservaId}")
+    public ReservationResponse getReservation(@PathVariable String reservaId) {
+        return mapper.toReservationResponse(facade.getReservation(reservaId));
+    }
 }
