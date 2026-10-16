@@ -1,3 +1,4 @@
+
 package com.hotel.reservations;
 
 import org.springframework.boot.SpringApplication;
