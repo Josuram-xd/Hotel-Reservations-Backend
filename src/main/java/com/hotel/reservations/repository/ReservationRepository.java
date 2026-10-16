@@ -17,6 +17,11 @@ public class ReservationRepository {
         reservations.add(reservation);
     }
 
+    /** Removes every stored reservation. Used by tests to isolate scenarios. */
+    public void deleteAll() {
+        reservations.clear();
+    }
+
     public List<Reservation> findAll() {
         return List.copyOf(reservations);
     }

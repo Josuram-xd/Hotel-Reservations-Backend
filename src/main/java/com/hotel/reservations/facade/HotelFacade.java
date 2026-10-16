@@ -6,6 +6,7 @@ import com.hotel.reservations.model.Guest;
 import com.hotel.reservations.model.Invoice;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
+import com.hotel.reservations.model.RoomType;
 import com.hotel.reservations.model.ServiceType;
 import com.hotel.reservations.repository.ReservationRepository;
 import com.hotel.reservations.service.AccessService;
@@ -15,6 +16,7 @@ import com.hotel.reservations.service.RoomService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Single entry point for the hotel operations. Callers (the REST controller
@@ -50,6 +52,11 @@ public class HotelFacade {
     public Reservation createReservation(int roomId, LocalDate checkIn, LocalDate checkOut, Guest guest) {
         Room room = roomService.getRoom(roomId);
         return roomService.reserve(room, checkIn, checkOut, guest);
+    }
+
+    /** Rooms of the given type (or every type when {@code type} is null) free for [checkIn, checkOut). */
+    public List<Room> findAvailable(LocalDate checkIn, LocalDate checkOut, RoomType type) {
+        return roomService.findAvailable(checkIn, checkOut, type);
     }
 
     /** The reservation with the given id, or ReservationNotFoundException when it does not exist. */
