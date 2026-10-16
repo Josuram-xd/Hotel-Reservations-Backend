@@ -21,7 +21,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 ## Phase 1 - Domain and rooms
 
-- [ ] feat(model): add domain enums, Room, Reservation, Guest and AdditionalService models [1.1]
+- [x] feat(model): add domain enums, Room, Reservation, Guest and AdditionalService models [1.1]
 - [ ] feat(room): seed 15+ predefined rooms across SINGLE, DOUBLE and SUITE types [1.2]
 - [ ] feat(room): implement RoomService availability search by date range and type [1.3]
 - [ ] feat(room): implement RoomService reserve and release with overlap protection [1.4]
