@@ -27,6 +27,7 @@ public class Reservation {
 
     private ReservationStatus status;
     private String digitalKey;
+    private Invoice invoice;
 
     public Reservation(Room room, Guest guest, LocalDate checkIn, LocalDate checkOut) {
         this.room = Objects.requireNonNull(room, "room must not be null");
@@ -82,6 +83,15 @@ public class Reservation {
         this.digitalKey = Objects.requireNonNull(key, "key must not be null");
     }
 
+    /** Stores the final invoice. Only allowed once, after check-out. */
+    public void attachInvoice(Invoice invoice) {
+        requireStatus("attach an invoice", ReservationStatus.CHECKED_OUT);
+        if (this.invoice != null) {
+            throw new InvalidStateException("Cannot attach an invoice: it was already issued for this reservation");
+        }
+        this.invoice = Objects.requireNonNull(invoice, "invoice must not be null");
+    }
+
     private void requireStatus(String action, ReservationStatus... allowed) {
         for (ReservationStatus candidate : allowed) {
             if (status == candidate) {
@@ -121,6 +131,10 @@ public class Reservation {
 
     public String getDigitalKey() {
         return digitalKey;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
     }
 
     @Override
