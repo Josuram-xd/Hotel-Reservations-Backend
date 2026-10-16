@@ -268,6 +268,39 @@ class HotelApiIntegrationTest {
                 .andExpect(jsonPath("$.code").value("RESERVATION_NOT_FOUND"));
     }
 
+    // ---------- GET /api/hotel/mis-reservas ----------
+
+    @Test
+    void myReservationsListsOnlyTheUserReservationsMostRecentFirst() throws Exception {
+        String early = createReservation(1, "2026-11-01", "2026-11-03");
+        String late = createReservation(2, "2026-12-01", "2026-12-03");
+        String otherToken = registerAndGetToken("grace@example.com");
+        mockMvc.perform(post("/api/hotel/reservar").header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(reservationBody(3, "2026-11-01", "2026-11-03")))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/hotel/mis-reservas").header("Authorization", bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(late))
+                .andExpect(jsonPath("$[1].id").value(early));
+    }
+
+    @Test
+    void myReservationsIsEmptyForAUserWithoutBookings() throws Exception {
+        mockMvc.perform(get("/api/hotel/mis-reservas").header("Authorization", bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void myReservationsRequiresAToken() throws Exception {
+        mockMvc.perform(get("/api/hotel/mis-reservas"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+    }
+
     // ---------- Full lifecycle ----------
 
     @Test

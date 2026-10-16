@@ -92,6 +92,14 @@ public class HotelController {
         return mapper.toReservationResponse(facade.checkOut(reservaId));
     }
 
+    /** The reservations of the authenticated user, most recent check-in first. */
+    @GetMapping("/mis-reservas")
+    public List<ReservationResponse> myReservations(@RequestAttribute(AuthInterceptor.USER_ATTRIBUTE) User user) {
+        return facade.findReservationsByOwner(user.id()).stream()
+                .map(mapper::toReservationResponse)
+                .toList();
+    }
+
     /** Reservation details, including services, totals and invoice when available. */
     @GetMapping("/reserva/{reservaId}")
     public ReservationResponse getReservation(@RequestAttribute(AuthInterceptor.USER_ATTRIBUTE) User user,
