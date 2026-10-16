@@ -17,6 +17,7 @@ Branch naming: `task-<n>-<short-description>`.
 ## Phase 0 - Setup
 
 - [x] feat: scaffold Spring Boot project with config, Dockerfile and docs [0.1]
+- [x] docs: add AGENTS.md with git workflow rules for AI assistants [0.2]
 
 ## Phase 1 - Domain and rooms
 
