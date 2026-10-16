@@ -7,6 +7,7 @@ import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.Room;
 import com.hotel.reservations.model.ServiceType;
 import com.hotel.reservations.repository.ReservationRepository;
+import com.hotel.reservations.service.AccessService;
 import com.hotel.reservations.service.AdditionalServiceService;
 import com.hotel.reservations.service.RoomService;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,16 @@ public class HotelFacade {
     private final RoomService roomService;
     private final ReservationRepository reservationRepository;
     private final AdditionalServiceService additionalServiceService;
+    private final AccessService accessService;
 
     public HotelFacade(RoomService roomService,
                        ReservationRepository reservationRepository,
-                       AdditionalServiceService additionalServiceService) {
+                       AdditionalServiceService additionalServiceService,
+                       AccessService accessService) {
         this.roomService = roomService;
         this.reservationRepository = reservationRepository;
         this.additionalServiceService = additionalServiceService;
+        this.accessService = accessService;
     }
 
     /**
@@ -55,6 +59,14 @@ public class HotelFacade {
         Reservation reservation = getReservation(reservationId);
         AdditionalService service = additionalServiceService.create(type, reservation);
         reservation.addService(service);
+        return reservation;
+    }
+
+    /** Checks the guest in (CONFIRMED -> CHECKED_IN) and issues the digital key. */
+    public Reservation checkIn(String reservationId) {
+        Reservation reservation = getReservation(reservationId);
+        reservation.checkIn();
+        reservation.assignDigitalKey(accessService.issueDigitalKey());
         return reservation;
     }
 }
