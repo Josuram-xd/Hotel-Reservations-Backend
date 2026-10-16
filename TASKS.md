@@ -67,7 +67,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 ## Phase 7 - Deployment (Railway)
 
-- [ ] docs: document API contract, assumptions and local run in README [7.1]
+- [x] docs: document API contract, assumptions and local run in README [7.1]
 - [ ] ci: add GitHub Actions workflow running mvn verify [7.2]
 - [ ] chore(deploy): deploy to Railway with PORT and CORS_ALLOWED_ORIGINS variables [7.3]
 - [ ] chore(deploy): smoke test production (health, availability, full lifecycle) [7.4]
