@@ -50,7 +50,7 @@ Branch naming: `task-<n>-<short-description>`.
 
 ## Phase 5 - REST API
 
-- [ ] feat(api): add request/response DTOs with bean validation [5.1]
+- [x] feat(api): add request/response DTOs with bean validation [5.1]
 - [ ] feat(api): POST /api/hotel/reservar [5.2]
 - [ ] feat(api): GET /api/hotel/disponibilidad (checkIn, checkOut, type, optional price preview) [5.3]
 - [ ] feat(api): POST /api/hotel/servicios/{reservaId} [5.4]
