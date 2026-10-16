@@ -1,4 +1,4 @@
-# TASKS - Hotel Reservations Backend
+/usage# TASKS - Hotel Reservations Backend
 
 Spring Boot 3 / Java 21 / Maven. In-memory state with Java collections.
 All code in English. One commit per task, using the task message with its `[x.y]` suffix.
@@ -90,9 +90,9 @@ Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` w
 
 ## Phase 9 - Design patterns (see `docs/PATTERNS.md`)
 
-- [ ] refactor(rate): extract PricingStrategy with LowSeasonStrategy and HighSeasonStrategy [9.1]
-- [ ] refactor(reservation): model the lifecycle with the State pattern (Confirmed, CheckedIn, CheckedOut) [9.2]
-- [ ] feat(extras): ExtraServiceFactory creating spa, breakfast and transfer services [9.3]
-- [ ] feat(billing): InvoiceBuilder for the itemized invoice [9.4]
-- [ ] feat(events): publish ReservationCheckedIn and ReservationCheckedOut events (Observer) and react to them (key issuing, room release) [9.5]
-- [ ] test(patterns): cover each pattern in isolation [9.6]
+- [x] refactor(rate): extract PricingStrategy with LowSeasonStrategy and HighSeasonStrategy [9.1]
+- [x] refactor(reservation): model the lifecycle with the State pattern (Confirmed, CheckedIn, CheckedOut) [9.2]
+- [x] feat(extras): ExtraServiceFactory creating spa, breakfast and transfer services [9.3]
+- [x] feat(billing): InvoiceBuilder for the itemized invoice [9.4]
+- [x] feat(events): publish ReservationCheckedIn and ReservationCheckedOut events (Observer) and react to them (key issuing, room release) [9.5]
+- [x] test(patterns): cover each pattern in isolation [9.6]

@@ -3,6 +3,9 @@ package com.hotel.reservations.service;
 import com.hotel.reservations.config.PricingProperties;
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.model.RoomType;
+import com.hotel.reservations.service.pricing.HighSeasonStrategy;
+import com.hotel.reservations.service.pricing.LowSeasonStrategy;
+import com.hotel.reservations.service.pricing.PricingStrategy;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,9 +24,17 @@ public class RateService {
     private static final int MONEY_SCALE = 2;
 
     private final PricingProperties prices;
+    private final PricingStrategy lowSeason = new LowSeasonStrategy();
+    private final PricingStrategy highSeason;
 
     public RateService(PricingProperties prices) {
         this.prices = prices;
+        this.highSeason = new HighSeasonStrategy(prices.highSeasonMultiplier());
+    }
+
+    /** The strategy that prices a night: high season inside the configured ranges, low season otherwise. */
+    private PricingStrategy strategyFor(LocalDate date) {
+        return isHighSeason(date) ? highSeason : lowSeason;
     }
 
     /** Base nightly price configured for the room type (no season applied). */
@@ -35,16 +46,14 @@ public class RateService {
         return base.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
-    /** Price of one night: the base price, multiplied when the night falls in high season. */
+    /** Price of one night, computed by the pricing strategy of the night's season. */
     public BigDecimal pricePerNight(RoomType type, LocalDate date) {
-        return isHighSeason(date) ? highSeasonPricePerNight(type) : basePrice(type);
+        return strategyFor(date).priceFor(basePrice(type));
     }
 
     /** Price of one high-season night for the room type (base price x multiplier). */
     public BigDecimal highSeasonPricePerNight(RoomType type) {
-        return basePrice(type)
-                .multiply(prices.highSeasonMultiplier())
-                .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+        return highSeason.priceFor(basePrice(type));
     }
 
     /** Number of nights of [checkIn, checkOut) that fall in high season. */

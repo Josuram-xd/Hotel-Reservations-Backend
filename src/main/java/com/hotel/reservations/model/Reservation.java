@@ -2,6 +2,8 @@ package com.hotel.reservations.model;
 
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.exception.InvalidStateException;
+import com.hotel.reservations.model.state.ConfirmedState;
+import com.hotel.reservations.model.state.ReservationState;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +28,7 @@ public class Reservation {
     private final List<AdditionalService> services = new ArrayList<>();
     private final String ownerId;
 
-    private ReservationStatus status;
+    private ReservationState state = new ConfirmedState();
     private String digitalKey;
     private Invoice invoice;
 
@@ -46,7 +48,6 @@ public class Reservation {
         }
         this.ownerId = ownerId;
         this.id = UUID.randomUUID().toString();
-        this.status = ReservationStatus.CONFIRMED;
     }
 
     /** Number of nights of the stay (the range [checkIn, checkOut) is night by night). */
@@ -61,30 +62,28 @@ public class Reservation {
 
     /** True while this reservation still blocks the availability of its room. */
     public boolean blocksAvailability() {
-        return status != ReservationStatus.CHECKED_OUT;
+        return state.blocksAvailability();
     }
 
     /** Adds an extra service. Only allowed while CONFIRMED or CHECKED_IN. */
     public void addService(AdditionalService service) {
-        requireStatus("add services", ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN);
+        state.ensureCanAddServices();
         services.add(Objects.requireNonNull(service, "service must not be null"));
     }
 
     /** CONFIRMED -> CHECKED_IN. */
     public void checkIn() {
-        requireStatus("check in", ReservationStatus.CONFIRMED);
-        status = ReservationStatus.CHECKED_IN;
+        state = state.checkIn();
     }
 
     /** CHECKED_IN -> CHECKED_OUT. Releases the room. */
     public void checkOut() {
-        requireStatus("check out", ReservationStatus.CHECKED_IN);
-        status = ReservationStatus.CHECKED_OUT;
+        state = state.checkOut();
     }
 
     /** Stores the digital key issued at check-in. Only allowed once, after check-in. */
     public void assignDigitalKey(String key) {
-        requireStatus("assign a digital key", ReservationStatus.CHECKED_IN);
+        state.ensureCanAssignDigitalKey();
         if (digitalKey != null) {
             throw new InvalidStateException("Cannot assign a digital key: it was already issued for this reservation");
         }
@@ -93,20 +92,11 @@ public class Reservation {
 
     /** Stores the final invoice. Only allowed once, after check-out. */
     public void attachInvoice(Invoice invoice) {
-        requireStatus("attach an invoice", ReservationStatus.CHECKED_OUT);
+        state.ensureCanAttachInvoice();
         if (this.invoice != null) {
             throw new InvalidStateException("Cannot attach an invoice: it was already issued for this reservation");
         }
         this.invoice = Objects.requireNonNull(invoice, "invoice must not be null");
-    }
-
-    private void requireStatus(String action, ReservationStatus... allowed) {
-        for (ReservationStatus candidate : allowed) {
-            if (status == candidate) {
-                return;
-            }
-        }
-        throw new InvalidStateException("Cannot " + action + ": reservation is " + status);
     }
 
     public String getId() {
@@ -135,7 +125,7 @@ public class Reservation {
     }
 
     public ReservationStatus getStatus() {
-        return status;
+        return state.status();
     }
 
     public List<AdditionalService> getServices() {
@@ -169,6 +159,6 @@ public class Reservation {
     @Override
     public String toString() {
         return "Reservation{id='" + id + "', room=" + room.getNumber()
-                + ", checkIn=" + checkIn + ", checkOut=" + checkOut + ", status=" + status + "}";
+                + ", checkIn=" + checkIn + ", checkOut=" + checkOut + ", status=" + state.status() + "}";
     }
 }
