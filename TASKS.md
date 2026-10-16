@@ -71,3 +71,28 @@ Branch naming: `task-<n>-<short-description>`.
 - [ ] ci: add GitHub Actions workflow running mvn verify [7.2]
 - [ ] chore(deploy): deploy to Railway with PORT and CORS_ALLOWED_ORIGINS variables [7.3]
 - [ ] chore(deploy): smoke test production (health, availability, full lifecycle) [7.4]
+
+## Phase 8 - Users and authentication (requested by the frontend team)
+
+Contract: see the "Authentication" section of
+[`API_CONTRACT.md` in the frontend repo](https://github.com/Josuram-xd/Hotel-Reservations-Frontend/blob/main/docs/API_CONTRACT.md).
+Users live in memory like everything else. Passwords are hashed with BCrypt (`spring-security-crypto`, no full Spring Security needed).
+Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` with expiry), checked by a servlet filter or `HandlerInterceptor`.
+
+- [ ] feat(user): add User model, in-memory UserRepository and unique email rule [8.1]
+- [ ] feat(auth): implement AuthService register and login with BCrypt and token issuing [8.2]
+- [ ] feat(auth): POST /api/auth/register, POST /api/auth/login, GET /api/auth/me, POST /api/auth/logout [8.3]
+- [ ] feat(auth): bearer token interceptor protecting booking endpoints (GET /disponibilidad stays public) [8.4]
+- [ ] feat(reservation): link reservations to their owner and return FORBIDDEN for other users [8.5]
+- [ ] feat(api): GET /api/hotel/mis-reservas listing the authenticated user reservations [8.6]
+- [ ] feat(api): add error codes UNAUTHORIZED, FORBIDDEN, INVALID_CREDENTIALS, EMAIL_ALREADY_REGISTERED [8.7]
+- [ ] test(auth): cover register, login, token validation and ownership rules [8.8]
+
+## Phase 9 - Design patterns (see `docs/PATTERNS.md`)
+
+- [ ] refactor(rate): extract PricingStrategy with LowSeasonStrategy and HighSeasonStrategy [9.1]
+- [ ] refactor(reservation): model the lifecycle with the State pattern (Confirmed, CheckedIn, CheckedOut) [9.2]
+- [ ] feat(extras): ExtraServiceFactory creating spa, breakfast and transfer services [9.3]
+- [ ] feat(billing): InvoiceBuilder for the itemized invoice [9.4]
+- [ ] feat(events): publish ReservationCheckedIn and ReservationCheckedOut events (Observer) and react to them (key issuing, room release) [9.5]
+- [ ] test(patterns): cover each pattern in isolation [9.6]
