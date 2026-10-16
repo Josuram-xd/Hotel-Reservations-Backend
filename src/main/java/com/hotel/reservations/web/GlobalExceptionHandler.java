@@ -2,12 +2,16 @@ package com.hotel.reservations.web;
 
 import com.hotel.reservations.dto.ApiErrorResponse;
 import com.hotel.reservations.dto.ApiErrorResponse.FieldErrorResponse;
+import com.hotel.reservations.exception.EmailAlreadyRegisteredException;
+import com.hotel.reservations.exception.ForbiddenException;
+import com.hotel.reservations.exception.InvalidCredentialsException;
 import com.hotel.reservations.exception.InvalidDatesException;
 import com.hotel.reservations.exception.InvalidServiceException;
 import com.hotel.reservations.exception.InvalidStateException;
 import com.hotel.reservations.exception.ReservationNotFoundException;
 import com.hotel.reservations.exception.RoomNotAvailableException;
 import com.hotel.reservations.exception.RoomNotFoundException;
+import com.hotel.reservations.exception.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -84,6 +88,30 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiErrorResponse handleInvalidState(InvalidStateException exception) {
         return error(HttpStatus.CONFLICT, "INVALID_STATE", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleUnauthorized(UnauthorizedException exception) {
+        return error(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleInvalidCredentials(InvalidCredentialsException exception) {
+        return error(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleForbidden(ForbiddenException exception) {
+        return error(HttpStatus.FORBIDDEN, "FORBIDDEN", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(EmailAlreadyRegisteredException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleEmailAlreadyRegistered(EmailAlreadyRegisteredException exception) {
+        return error(HttpStatus.CONFLICT, "EMAIL_ALREADY_REGISTERED", exception.getMessage(), null);
     }
 
     @ExceptionHandler(Exception.class)
