@@ -1,6 +1,7 @@
 package com.hotel.reservations.service;
 
 import com.hotel.reservations.config.ExtrasProperties;
+import com.hotel.reservations.exception.InvalidServiceException;
 import com.hotel.reservations.model.AdditionalService;
 import com.hotel.reservations.model.Reservation;
 import com.hotel.reservations.model.ServiceType;
@@ -27,7 +28,9 @@ public class AdditionalServiceService {
 
     /** Builds the extra service of the given type, priced for the reservation's stay length. */
     public AdditionalService create(ServiceType type, Reservation reservation) {
-        Objects.requireNonNull(type, "type must not be null");
+        if (type == null) {
+            throw new InvalidServiceException("The requested service type is not valid");
+        }
         Objects.requireNonNull(reservation, "reservation must not be null");
         return switch (type) {
             case SPA -> new AdditionalService(type, "Spa", money(extras.spa()));
