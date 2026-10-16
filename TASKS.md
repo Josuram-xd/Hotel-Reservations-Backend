@@ -53,7 +53,7 @@ Branch naming: `task-<n>-<short-description>`.
 - [x] feat(api): add request/response DTOs with bean validation [5.1]
 - [x] feat(api): POST /api/hotel/reservar [5.2]
 - [x] feat(api): GET /api/hotel/disponibilidad (checkIn, checkOut, type, optional price preview) [5.3]
-- [ ] feat(api): POST /api/hotel/servicios/{reservaId} [5.4]
+- [x] feat(api): POST /api/hotel/servicios/{reservaId} [5.4]
 - [ ] feat(api): PUT /api/hotel/checkin/{reservaId} and PUT /api/hotel/checkout/{reservaId} [5.5]
 - [ ] feat(api): GET /api/hotel/reserva/{reservaId} [5.6]
 - [ ] feat(api): global exception handler with consistent JSON errors and error codes [5.7]

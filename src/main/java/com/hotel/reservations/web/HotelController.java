@@ -1,5 +1,6 @@
 package com.hotel.reservations.web;
 
+import com.hotel.reservations.dto.AddServiceRequest;
 import com.hotel.reservations.dto.AvailableRoomResponse;
 import com.hotel.reservations.dto.CreateReservationRequest;
 import com.hotel.reservations.dto.ReservationResponse;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,5 +59,13 @@ public class HotelController {
         return facade.findAvailable(checkIn, checkOut, type).stream()
                 .map(room -> mapper.toAvailableRoomResponse(room, checkIn, checkOut))
                 .toList();
+    }
+
+    /** Adds an extra service to a reservation (only while CONFIRMED or CHECKED_IN). */
+    @PostMapping("/servicios/{reservaId}")
+    public ReservationResponse addService(@PathVariable String reservaId,
+                                          @Valid @RequestBody AddServiceRequest request) {
+        Reservation reservation = facade.addService(reservaId, request.serviceType());
+        return mapper.toReservationResponse(reservation);
     }
 }
