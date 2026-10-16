@@ -95,4 +95,4 @@ Sessions use opaque bearer tokens (random UUID stored in a `ConcurrentHashMap` w
 - [x] feat(extras): ExtraServiceFactory creating spa, breakfast and transfer services [9.3]
 - [x] feat(billing): InvoiceBuilder for the itemized invoice [9.4]
 - [x] feat(events): publish ReservationCheckedIn and ReservationCheckedOut events (Observer) and react to them (key issuing, room release) [9.5]
-- [ ] test(patterns): cover each pattern in isolation [9.6]
+- [x] test(patterns): cover each pattern in isolation [9.6]
