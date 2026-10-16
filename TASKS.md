@@ -58,7 +58,7 @@ Branch naming: `task-<n>-<short-description>`.
 - [x] feat(api): GET /api/hotel/reserva/{reservaId} [5.6]
 - [x] feat(api): global exception handler with consistent JSON errors and error codes [5.7]
 - [x] feat(config): configurable CORS via CORS_ALLOWED_ORIGINS [5.8]
-- [ ] test(api): MockMvc integration tests for every endpoint, target 80%+ coverage [5.9]
+- [x] test(api): MockMvc integration tests for every endpoint, target 80%+ coverage [5.9]
 
 ## Phase 6 - Concurrency and hardening
 
